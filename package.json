@@ -1,0 +1,22 @@
+{
+  "name": "todolist",
+  "version": "1.0.0",
+  "description": "Shopping list from Google Script for Amazfit Balance",
+  "main": "app.js",
+  "author": "Developer",
+  "license": "ISC",
+  "scripts": {
+    "predev": "node scripts/configure-env.js",
+    "dev": "zeus dev",
+    "prebuild": "node scripts/configure-env.js",
+    "build": "zeus build",
+    "prepreview": "node scripts/configure-env.js",
+    "preview": "zeus preview"
+  },
+  "dependencies": {
+    "@zeppos/zml": "^0.0.38"
+  },
+  "devDependencies": {
+    "@zeppos/device-types": "^4.0.0"
+  }
+}
