@@ -34,11 +34,23 @@ Page(
       const cache = localStorage.getItem(CACHE_KEY)
       const today = this.getTodayKey()
       if (cache && cache.date === today && Array.isArray(cache.list)) {
-        this.state.shoppingList = cache.list
+        this.state.shoppingList = this.normalizeShoppingList(cache.list)
         this.drawShoppingList()
       } else {
         this.fetchListFromPhone()
       }
+    },
+
+    normalizeShoppingList(list) {
+      return list.map((item) => {
+        if (typeof item === 'string') {
+          return { text: item, checked: false }
+        }
+        if (item && typeof item === 'object') {
+          return { ...item, checked: Boolean(item.checked) }
+        }
+        return { text: String(item), checked: false }
+      })
     },
 
     getTodayKey() {
@@ -46,6 +58,13 @@ Page(
       const month = String(date.getMonth() + 1).padStart(2, '0')
       const day = String(date.getDate()).padStart(2, '0')
       return `${date.getFullYear()}-${month}-${day}`
+    },
+
+    saveShoppingListCache() {
+      localStorage.setItem(CACHE_KEY, {
+        date: this.getTodayKey(),
+        list: this.state.shoppingList
+      })
     },
 
     fetchListFromPhone(showLoading = true) {
@@ -72,11 +91,8 @@ Page(
             throw new Error('Usługa telefonu zwróciła nieprawidłową listę.')
           }
           console.log(`Odebrano listę (${list.length} elementów)`)
-          this.state.shoppingList = list
-          localStorage.setItem(CACHE_KEY, {
-            date: this.getTodayKey(),
-            list
-          })
+          this.state.shoppingList = this.normalizeShoppingList(list)
+          this.saveShoppingListCache()
           this.drawShoppingList()
         })
         .catch((error) => {
@@ -117,9 +133,8 @@ Page(
           normal_color: isChecked ? 0x222222 : 0x444444,
           press_color: 0x666666,
           click_func: () => {
-            if (typeof this.state.shoppingList[index] === 'object') {
-              this.state.shoppingList[index].checked = !isChecked;
-            }
+            this.state.shoppingList[index].checked = !this.state.shoppingList[index].checked
+            this.saveShoppingListCache()
             this.drawShoppingList();
           }
         });

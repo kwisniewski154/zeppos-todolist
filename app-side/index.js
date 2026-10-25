@@ -2,6 +2,40 @@
 import { BaseSideService } from '@zeppos/zml/base-side'
 import { GOOGLE_SCRIPT_URL } from './config'
 
+function parseShoppingListResponse(response) {
+  if (response.status && (response.status < 200 || response.status >= 300)) {
+    throw new Error(`Google Apps Script zwrócił HTTP ${response.status}.`)
+  }
+
+  const body = response.body
+  if (typeof body !== 'string') {
+    if (Array.isArray(body)) {
+      return body
+    }
+    throw new Error('Google Apps Script nie zwrócił listy w formacie JSON.')
+  }
+
+  const trimmedBody = body.trim()
+  if (trimmedBody.startsWith('<')) {
+    throw new Error(
+      'Google Apps Script zwrócił stronę HTML zamiast JSON. Sprawdź URL wdrożenia Web App i ustaw dostęp dla każdego.'
+    )
+  }
+
+  let data
+  try {
+    data = JSON.parse(trimmedBody)
+  } catch (error) {
+    throw new Error('Google Apps Script zwrócił nieprawidłowy JSON.')
+  }
+
+  if (!Array.isArray(data)) {
+    throw new Error('Google Apps Script zwrócił JSON, ale nie jest to lista.')
+  }
+
+  return data
+}
+
 AppSideService(
   BaseSideService({
     onInit() {
@@ -27,10 +61,7 @@ AppSideService(
         timeout: 15000
       })
         .then((response) => {
-          const data = typeof response.body === 'string' ? JSON.parse(response.body) : response.body
-          if (!Array.isArray(data)) {
-            throw new Error('Google Apps Script zwrócił dane w nieprawidłowym formacie.')
-          }
+          const data = parseShoppingListResponse(response)
           console.log('Pobrano listę z Google:', data.length, 'elementów')
           res(null, { list: data })
         })
