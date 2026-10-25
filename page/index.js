@@ -1,5 +1,9 @@
 import { createWidget, widget, align, deleteWidget } from '@zos/ui'
 import { BasePage } from '@zeppos/zml/base-page'
+import { localStorage } from '@zos/storage'
+
+const CACHE_KEY = 'shopping_list_cache'
+const REQUEST_TIMEOUT_MS = 20000
 
 Page(
   BasePage({
@@ -27,25 +31,60 @@ Page(
         }
       })
 
-      this.renderStatusText("Kliknij Odśwież, aby pobrać listę");
+      const cache = localStorage.getItem(CACHE_KEY)
+      const today = this.getTodayKey()
+      if (cache && cache.date === today && Array.isArray(cache.list)) {
+        this.state.shoppingList = cache.list
+        this.drawShoppingList()
+      } else {
+        this.fetchListFromPhone()
+      }
     },
 
-    fetchListFromPhone() {
-      this.renderStatusText("Pobieranie danych...");
+    getTodayKey() {
+      const date = new Date()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const day = String(date.getDate()).padStart(2, '0')
+      return `${date.getFullYear()}-${month}-${day}`
+    },
 
-      this.request({ method: 'GET_SHOPPING_LIST' })
+    fetchListFromPhone(showLoading = true) {
+      if (showLoading) {
+        this.renderStatusText("Pobieranie danych...");
+      }
+
+      let timeoutId
+      const request = new Promise((resolve, reject) => {
+        timeoutId = setTimeout(() => {
+          reject(new Error('Brak odpowiedzi z telefonu po 20 sekundach. Otwórz aplikację Zepp i spróbuj ponownie.'))
+        }, REQUEST_TIMEOUT_MS)
+
+        console.log('Wysyłam żądanie GET_SHOPPING_LIST do app-side')
+        this.request({ method: 'GET_SHOPPING_LIST' })
+          .then(resolve)
+          .catch(reject)
+      })
+
+      request
         .then(({ list }) => {
+          clearTimeout(timeoutId)
           if (!Array.isArray(list)) {
             throw new Error('Usługa telefonu zwróciła nieprawidłową listę.')
           }
+          console.log(`Odebrano listę (${list.length} elementów)`)
           this.state.shoppingList = list
+          localStorage.setItem(CACHE_KEY, {
+            date: this.getTodayKey(),
+            list
+          })
           this.drawShoppingList()
         })
         .catch((error) => {
+          clearTimeout(timeoutId)
           console.error('Nie udało się pobrać listy:', error)
-          const message = error && error.error
-            ? error.error
-            : 'Nie udało się połączyć z usługą aplikacji w telefonie. Otwórz aplikację Zepp i spróbuj ponownie.'
+          const message = error && (error.error || error.message)
+            ? error.error || error.message
+            : 'Nie udało się pobrać listy. Otwórz aplikację Zepp i spróbuj ponownie.'
           this.renderStatusText(message)
         })
     },

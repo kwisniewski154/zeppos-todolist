@@ -14,7 +14,8 @@
   },
   "permissions": [
     "fetch",
-    "messaging"
+    "messaging",
+    "device:os.local_storage"
   ],
   "runtime": {
     "apiVersion": {

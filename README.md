@@ -21,3 +21,7 @@ npm run preview
 The generated `app-side/config.js` is ignored by Git. Without the URL, the app
 reports an error when you request the list. If the old URL previously present
 in this project was active, revoke or rotate it.
+
+The shopping list is cached on the watch for the current local calendar day.
+The app loads that cached list at startup and fetches a new one automatically
+when no same-day cache exists. Use the refresh button to fetch it again early.
