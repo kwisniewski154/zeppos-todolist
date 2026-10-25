@@ -9,7 +9,8 @@ Page(
   BasePage({
     state: {
       shoppingList: [],
-      widgets: []
+      widgets: [],
+      listCountWidget: null
     },
 
     build() {
@@ -19,10 +20,10 @@ Page(
       createWidget(widget.BUTTON, {
         x: 120,
         y: 40,
-        w: 240,
+        w: 160,
         h: 50,
-        radius: 25,
-        text: 'Odśwież z Gmaila',
+        radius: 20,
+        text: 'Odśwież',
         color: 0xffffff,
         normal_color: 0x333333,
         press_color: 0x555555,
@@ -30,6 +31,7 @@ Page(
           this.fetchListFromPhone();
         }
       })
+      this.updateListCounts()
 
       const cache = localStorage.getItem(CACHE_KEY)
       const today = this.getTodayKey()
@@ -110,6 +112,7 @@ Page(
         this.state.widgets.forEach(w => { if (w) deleteWidget(w); });
       }
       this.state.widgets = [];
+      this.updateListCounts()
 
       let currentY = 110;
 
@@ -161,6 +164,25 @@ Page(
         text: message
       });
       this.state.widgets.push(statusWidget);
+    },
+
+    updateListCounts() {
+      if (this.state.listCountWidget) {
+        deleteWidget(this.state.listCountWidget)
+      }
+
+      const total = this.state.shoppingList.length
+      const checked = this.state.shoppingList.filter(item => item.checked).length
+      this.state.listCountWidget = createWidget(widget.TEXT, {
+        x: 190,
+        y: 40,
+        w: 250,
+        h: 50,
+        color: 0xffffff,
+        text_size: 20,
+        align_h: align.CENTER_H,
+        text: `${checked}/${total}`
+      })
     }
   })
 )
