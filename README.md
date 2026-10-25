@@ -23,6 +23,20 @@ npm run build
 npm run preview
 ```
 
+`npm run dev` loads a fixed sample shopping list in the simulator, so you can
+test checking items without a phone connection. If you run Zeus directly, first
+enable the development config:
+
+```sh
+node scripts/configure-env.js dev
+zeus dev
+```
+
+The test list is not loaded or saved to the shopping-list cache by
+`npm run build` or `npm run preview`. Those commands reset the generated config
+to production mode, so run the development config command again before using
+`zeus dev`.
+
 The generated `app-side/config.js` is ignored by Git. Without the URL, the app
 reports an error when you request the list. If the old URL previously present
 in this project was active, revoke or rotate it.

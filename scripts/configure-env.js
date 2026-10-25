@@ -34,10 +34,12 @@ function readEnvFile(filePath) {
 
 const envFile = readEnvFile(envPath)
 const googleScriptUrl = process.env.GOOGLE_SCRIPT_URL || envFile.GOOGLE_SCRIPT_URL || ''
+const isDevMode = process.argv[2] === 'dev'
 
 fs.writeFileSync(
   configPath,
-  `export const GOOGLE_SCRIPT_URL = ${JSON.stringify(googleScriptUrl)}\n`,
+  `export const GOOGLE_SCRIPT_URL = ${JSON.stringify(googleScriptUrl)}\n` +
+    `export const IS_DEV_MODE = ${isDevMode}\n`,
   'utf8'
 )
 

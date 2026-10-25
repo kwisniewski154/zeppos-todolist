@@ -1,9 +1,17 @@
 import { createWidget, widget, align, deleteWidget } from '@zos/ui'
 import { BasePage } from '@zeppos/zml/base-page'
 import { localStorage } from '@zos/storage'
+import { IS_DEV_MODE } from '../app-side/config'
 
 const CACHE_KEY = 'shopping_list_cache'
 const REQUEST_TIMEOUT_MS = 20000
+const DEV_TEST_LIST = [
+  'Mleko',
+  'Chleb',
+  'Jajka',
+  'Masło',
+  'Jabłka'
+]
 
 Page(
   BasePage({
@@ -28,19 +36,32 @@ Page(
         normal_color: 0x333333,
         press_color: 0x555555,
         click_func: () => {
-          this.fetchListFromPhone();
+          if (IS_DEV_MODE) {
+            this.loadTestList()
+          } else {
+            this.fetchListFromPhone()
+          }
         }
       })
       this.updateListCounts()
 
-      const cache = localStorage.getItem(CACHE_KEY)
-      const today = this.getTodayKey()
-      if (cache && cache.date === today && Array.isArray(cache.list)) {
-        this.state.shoppingList = this.normalizeShoppingList(cache.list)
-        this.drawShoppingList()
+      if (IS_DEV_MODE) {
+        this.loadTestList()
       } else {
-        this.fetchListFromPhone()
+        const cache = localStorage.getItem(CACHE_KEY)
+        const today = this.getTodayKey()
+        if (cache && cache.date === today && Array.isArray(cache.list)) {
+          this.state.shoppingList = this.normalizeShoppingList(cache.list)
+          this.drawShoppingList()
+        } else {
+          this.fetchListFromPhone()
+        }
       }
+    },
+
+    loadTestList() {
+      this.state.shoppingList = this.normalizeShoppingList(DEV_TEST_LIST)
+      this.drawShoppingList()
     },
 
     normalizeShoppingList(list) {
@@ -137,7 +158,9 @@ Page(
           press_color: 0x666666,
           click_func: () => {
             this.state.shoppingList[index].checked = !this.state.shoppingList[index].checked
-            this.saveShoppingListCache()
+            if (!IS_DEV_MODE) {
+              this.saveShoppingListCache()
+            }
             this.drawShoppingList();
           }
         });
