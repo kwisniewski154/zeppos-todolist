@@ -11,7 +11,8 @@ yarn-error.log*
 yarn.lock
 selenium-debug.log
 .idea
-.vscode
+.vscode/*
+!.vscode/settings.json
 *.suo
 *.ntvs*
 *.njsproj

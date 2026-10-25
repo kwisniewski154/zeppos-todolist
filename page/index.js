@@ -32,6 +32,7 @@ Page(
         h: 50,
         radius: 20,
         text: 'Odśwież',
+        text_size: 24,
         color: 0xffffff,
         normal_color: 0x333333,
         press_color: 0x555555,
@@ -153,6 +154,7 @@ Page(
           h: 60,
           radius: 12,
           text: isChecked ? `[X] ${itemText}` : `[ ] ${itemText}`,
+          text_size: 24,
           color: isChecked ? 0x888888 : 0xffffff,
           normal_color: isChecked ? 0x222222 : 0x444444,
           press_color: 0x666666,
@@ -202,7 +204,7 @@ Page(
         w: 250,
         h: 50,
         color: 0xffffff,
-        text_size: 20,
+        text_size: 25,
         align_h: align.CENTER_H,
         text: `${checked}/${total}`
       })
