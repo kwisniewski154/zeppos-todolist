@@ -6,11 +6,8 @@
   "author": "Developer",
   "license": "ISC",
   "scripts": {
-    "predev": "node scripts/configure-env.js dev",
     "dev": "zeus dev",
-    "prebuild": "node scripts/configure-env.js",
     "build": "zeus build",
-    "prepreview": "node scripts/configure-env.js",
     "preview": "zeus preview"
   },
   "dependencies": {
