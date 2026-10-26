@@ -48,9 +48,12 @@
     }
   },
   "i18n": {
+    "pl-PL": {
+      "appName": "ToDoList"
+    },
     "en-US": {
       "appName": "ToDoList"
     }
   },
-  "defaultLanguage": "en-US"
+  "defaultLanguage": "pl-PL"
 }

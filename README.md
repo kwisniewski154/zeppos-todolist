@@ -7,6 +7,10 @@ Shopping list app for Amazfit Balance, built with Zepp OS SDK 4.
 Set `GOOGLE_SCRIPT_URL` in `app-side/config.js` to your deployed Google Apps
 Script URL. Do not commit private or write-enabled credentials.
 
+The app uses the watch language when Polish or English is available, and
+defaults to Polish. Translations are maintained in `page/i18n/pl-PL.po` and
+`page/i18n/en-US.po`.
+
 Use the Web App deployment URL from Apps Script (the URL ending in
 `/macros/s/<deployment-id>/exec`). The endpoint must be accessible to the app
 and return a JSON array; an HTML page usually means the deployment URL or its

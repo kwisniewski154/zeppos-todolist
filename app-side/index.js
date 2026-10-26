@@ -4,7 +4,9 @@ import { GOOGLE_SCRIPT_URL } from './config'
 
 function parseShoppingListResponse(response) {
   if (response.status && (response.status < 200 || response.status >= 300)) {
-    throw new Error(`Google Apps Script zwrócił HTTP ${response.status}.`)
+    const error = new Error('error_http_status')
+    error.status = response.status
+    throw error
   }
 
   const body = response.body
@@ -12,25 +14,23 @@ function parseShoppingListResponse(response) {
     if (Array.isArray(body)) {
       return body
     }
-    throw new Error('Google Apps Script nie zwrócił listy w formacie JSON.')
+    throw new Error('error_invalid_json_response')
   }
 
   const trimmedBody = body.trim()
   if (trimmedBody.startsWith('<')) {
-    throw new Error(
-      'Google Apps Script zwrócił stronę HTML zamiast JSON. Sprawdź URL wdrożenia Web App i ustaw dostęp dla każdego.'
-    )
+    throw new Error('error_html_response')
   }
 
   let data
   try {
     data = JSON.parse(trimmedBody)
   } catch (error) {
-    throw new Error('Google Apps Script zwrócił nieprawidłowy JSON.')
+    throw new Error('error_invalid_json')
   }
 
   if (!Array.isArray(data)) {
-    throw new Error('Google Apps Script zwrócił JSON, ale nie jest to lista.')
+    throw new Error('error_not_list_json')
   }
 
   return data
@@ -39,19 +39,18 @@ function parseShoppingListResponse(response) {
 AppSideService(
   BaseSideService({
     onInit() {
-      console.log('App-side Service wystartował pomyślnie w SDK 4.0')
+      console.log('App-side service started successfully on SDK 4.0')
     },
 
     onRequest(req, res) {
-      console.log('Odebrano żądanie app-side:', req && req.method)
+      console.log('Received app-side request:', req && req.method)
       if (!req || req.method !== 'GET_SHOPPING_LIST') {
-        return res({ error: `Nieobsługiwana metoda: ${req && req.method}` })
+        return res({ error: 'error_unsupported_method' })
       }
 
       if (!GOOGLE_SCRIPT_URL) {
-        const error = 'Skonfiguruj adres Google Apps Script przed pobraniem listy.'
-        console.error(error)
-        return res({ error })
+        console.error('Google Apps Script URL is not configured')
+        return res({ error: 'error_missing_url' })
       }
 
       fetch({
@@ -62,17 +61,20 @@ AppSideService(
       })
         .then((response) => {
           const data = parseShoppingListResponse(response)
-          console.log('Pobrano listę z Google:', data.length, 'elementów')
+          console.log('Fetched Google list:', data.length, 'items')
           res(null, { list: data })
         })
         .catch((error) => {
-          console.error('Błąd pobierania listy z Google:', error)
-          res({ error: error && error.message ? error.message : 'Nie udało się pobrać listy z Google.' })
+          console.error('Failed to fetch Google list:', error)
+          res({
+            error: error && error.message ? error.message : 'error_fetch_failed',
+            status: error && error.status
+          })
         })
     },
 
     onDestroy() {
-      console.log('App-side Service zatrzymany')
+      console.log('App-side service stopped')
     }
   })
 )

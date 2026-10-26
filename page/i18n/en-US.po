@@ -1,0 +1,65 @@
+msgid "Refresh"
+msgstr "Refresh"
+
+msgid "Loading data..."
+msgstr "Loading data..."
+
+msgid "No response from the phone after 20 seconds. Open the Zepp app and try again."
+msgstr "No response from the phone after 20 seconds. Open the Zepp app and try again."
+
+msgid "The phone service returned an invalid list."
+msgstr "The phone service returned an invalid list."
+
+msgid "Could not fetch the list. Open the Zepp app and try again."
+msgstr "Could not fetch the list. Open the Zepp app and try again."
+
+msgid "The list is empty!"
+msgstr "The list is empty!"
+
+msgid "Unnamed item"
+msgstr "Unnamed item"
+
+msgid "error_http_status"
+msgstr "Google Apps Script returned HTTP {status}."
+
+msgid "error_invalid_json_response"
+msgstr "Google Apps Script did not return a list in JSON format."
+
+msgid "error_html_response"
+msgstr "Google Apps Script returned an HTML page instead of JSON. Check the Web App deployment URL and allow access for everyone."
+
+msgid "error_invalid_json"
+msgstr "Google Apps Script returned invalid JSON."
+
+msgid "error_not_list_json"
+msgstr "Google Apps Script returned JSON, but it is not a list."
+
+msgid "error_missing_url"
+msgstr "Configure the Google Apps Script URL before fetching the list."
+
+msgid "error_unsupported_method"
+msgstr "Unsupported request method."
+
+msgid "error_fetch_failed"
+msgstr "Could not fetch the list from Google."
+
+msgid "error_phone_timeout"
+msgstr "No response from the phone after 20 seconds. Open the Zepp app and try again."
+
+msgid "error_invalid_list_response"
+msgstr "The phone service returned an invalid list."
+
+msgid "test_item_milk"
+msgstr "Milk"
+
+msgid "test_item_bread"
+msgstr "Bread"
+
+msgid "test_item_eggs"
+msgstr "Eggs"
+
+msgid "test_item_butter"
+msgstr "Butter"
+
+msgid "test_item_apples"
+msgstr "Apples"

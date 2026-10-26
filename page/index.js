@@ -1,16 +1,27 @@
 import { createWidget, widget, align, deleteWidget } from '@zos/ui'
+import { getText } from '@zos/i18n'
 import { BasePage } from '@zeppos/zml/base-page'
 import { localStorage } from '@zos/storage'
 import { IS_DEV_MODE } from '../app-side/config'
 
 const CACHE_KEY = 'shopping_list_cache'
 const REQUEST_TIMEOUT_MS = 20000
+const TRANSLATABLE_ERROR_KEYS = [
+  'error_http_status',
+  'error_invalid_json_response',
+  'error_html_response',
+  'error_invalid_json',
+  'error_not_list_json',
+  'error_missing_url',
+  'error_unsupported_method',
+  'error_fetch_failed'
+]
 const DEV_TEST_LIST = [
-  'Mleko',
-  'Chleb',
-  'Jajka',
-  'Masło',
-  'Jabłka'
+  'test_item_milk',
+  'test_item_bread',
+  'test_item_eggs',
+  'test_item_butter',
+  'test_item_apples'
 ]
 
 Page(
@@ -31,7 +42,7 @@ Page(
         w: 160,
         h: 50,
         radius: 20,
-        text: 'Odśwież',
+        text: getText('Refresh'),
         text_size: 24,
         color: 0xffffff,
         normal_color: 0x333333,
@@ -61,7 +72,7 @@ Page(
     },
 
     loadTestList() {
-      this.state.shoppingList = this.normalizeShoppingList(DEV_TEST_LIST)
+      this.state.shoppingList = this.normalizeShoppingList(DEV_TEST_LIST.map(item => getText(item)))
       this.drawShoppingList()
     },
 
@@ -93,16 +104,16 @@ Page(
 
     fetchListFromPhone(showLoading = true) {
       if (showLoading) {
-        this.renderStatusText("Pobieranie danych...");
+        this.renderStatusText(getText('Loading data...'))
       }
 
       let timeoutId
       const request = new Promise((resolve, reject) => {
         timeoutId = setTimeout(() => {
-          reject(new Error('Brak odpowiedzi z telefonu po 20 sekundach. Otwórz aplikację Zepp i spróbuj ponownie.'))
+          reject(new Error('error_phone_timeout'))
         }, REQUEST_TIMEOUT_MS)
 
-        console.log('Wysyłam żądanie GET_SHOPPING_LIST do app-side')
+        console.log('Sending GET_SHOPPING_LIST request to app-side')
         this.request({ method: 'GET_SHOPPING_LIST' })
           .then(resolve)
           .catch(reject)
@@ -112,20 +123,29 @@ Page(
         .then(({ list }) => {
           clearTimeout(timeoutId)
           if (!Array.isArray(list)) {
-            throw new Error('Usługa telefonu zwróciła nieprawidłową listę.')
+            throw new Error('error_invalid_list_response')
           }
-          console.log(`Odebrano listę (${list.length} elementów)`)
+          console.log(`Received list (${list.length} items)`)
           this.state.shoppingList = this.normalizeShoppingList(list)
           this.saveShoppingListCache()
           this.drawShoppingList()
         })
         .catch((error) => {
           clearTimeout(timeoutId)
-          console.error('Nie udało się pobrać listy:', error)
-          const message = error && (error.error || error.message)
-            ? error.error || error.message
-            : 'Nie udało się pobrać listy. Otwórz aplikację Zepp i spróbuj ponownie.'
-          this.renderStatusText(message)
+          console.error('Failed to fetch shopping list:', error)
+          const errorKey = error && (error.error || error.message)
+          const message = TRANSLATABLE_ERROR_KEYS.indexOf(errorKey) !== -1
+            ? getText(errorKey)
+            : errorKey === 'error_phone_timeout'
+              ? getText('No response from the phone after 20 seconds. Open the Zepp app and try again.')
+              : errorKey === 'error_invalid_list_response'
+                ? getText('The phone service returned an invalid list.')
+                : getText('Could not fetch the list. Open the Zepp app and try again.')
+          const status = error && error.status
+          const translatedMessage = errorKey === 'error_http_status'
+            ? message.replace('{status}', String(status))
+            : message
+          this.renderStatusText(translatedMessage)
         })
     },
 
@@ -139,12 +159,12 @@ Page(
       let currentY = 110;
 
       if (this.state.shoppingList.length === 0) {
-        this.renderStatusText("Lista jest pusta!");
+        this.renderStatusText(getText('The list is empty!'))
         return;
       }
 
       this.state.shoppingList.forEach((item, index) => {
-        const itemText = typeof item === 'string' ? item : (item.text || 'Brak nazwy');
+        const itemText = typeof item === 'string' ? item : (item.text || getText('Unnamed item'))
         const isChecked = item && item.checked ? true : false;
 
         const rowBg = createWidget(widget.BUTTON, {
